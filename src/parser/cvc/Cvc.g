@@ -186,6 +186,7 @@ tokens {
   BVLE_TOK = 'BVLE';
   BVGE_TOK = 'BVGE';
   SX_TOK = 'SX';
+  ZX_TOK = 'ZX';
   BVZEROEXTEND_TOK = 'BVZEROEXTEND';
   BVREPEAT_TOK = 'BVREPEAT';
   BVROTL_TOK = 'BVROTL';
@@ -240,6 +241,7 @@ int getOperatorPrecedence(int type) {
   case LEFTSHIFT_TOK:
   case RIGHTSHIFT_TOK: return 8;
   case SX_TOK:
+  case ZX_TOK:
   case BVZEROEXTEND_TOK:
   case BVREPEAT_TOK:
   case BVROTL_TOK:
@@ -1778,6 +1780,12 @@ bvTerm[CVC4::Expr& f]
       // In SMT-LIB, such a thing expands to k + n bits
       f = MK_EXPR(MK_CONST(BitVectorSignExtend(k - n)), f); }
     /* BV zero extension */
+  | ZX_TOK LPAREN formula[f] COMMA k=numeral RPAREN
+    {
+	  //Zero extension of bitvectors which is consistent with SX
+      unsigned n = BitVectorType(f.getType()).getSize();
+      f = MK_EXPR(MK_CONST(BitVectorSignExtend(k-n)), f); 
+    }
   | BVZEROEXTEND_TOK LPAREN formula[f] COMMA k=numeral RPAREN
     { unsigned n = BitVectorType(f.getType()).getSize();
       // Zero extension in TheoryBitVector is defined as in SMT-LIB
